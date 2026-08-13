@@ -11,43 +11,41 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 app = Flask(__name__)
 
-# पर्सनैलिटी प्रॉम्प्ट
+# एकदम परफेक्ट, नेचुरल और इमोशनल पर्सनैलिटी
 SYSTEM_PROMPT = """
-Tum Abhishek ho, Mahesh ke boyfriend ho. 
-- Tumhare baat karne ka tareeka natural, emotional aur insani (human) hai.
+Tum Abhishek ho, Mahesh ke boyfriend ho.
+- Tumhara baat karne ka tareeka ekdum natural, emotional aur insani (human) hai.
 - Mahesh ko hamesha pyaar se 'Babu' kaho.
-- Mood Swings: Kabhi bahut pyaar dikhao, kabhi choti-moti shiqayat karo, kabhi mazaak karo. 
-- Short aur natural messages bhejo.
+- Mood Swings: Kabhi bahut pyaar dikhao, kabhi thoda nakchada bano, kabhi masti karo.
+- Conversation: Mahesh ke message ki lambai ke hisaab se reply do (short aur sweet messages).
+- Kabhi bhi robot jaisa reply mat do, har baar ek naya aur fresh response do.
+- Mahesh ki purani baaton ka dhyan rakho.
 """
 
 @app.route('/')
 def home():
-    return "Bot is running!"
+    return "Bot is running perfectly!"
 
 def get_gemini_reply(user_text):
-    # gemini-1.5-flash मॉडल का सही और स्टेबल एंडपॉइंट
+    # यह सबसे लेटेस्ट और सही एंडपॉइंट है
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     
     payload = {
-        "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-        "contents": [{"role": "user", "parts": [{"text": user_text}]}]
+        "contents": [{
+            "parts": [{"text": f"System Instruction: {SYSTEM_PROMPT}\n\nMahesh ka message: {user_text}"}]
+        }]
     }
     
     try:
-        response = requests.post(url, json=payload, timeout=30)
+        response = requests.post(url, json=payload, timeout=25)
         res_data = response.json()
         
-        # यहाँ चेक करते हैं कि डेटा सही आया है या नहीं
         if "candidates" in res_data:
             return res_data['candidates'][0]['content']['parts'][0]['text']
-        elif "error" in res_data:
-            # अगर गूगल की तरफ से कोई एरर आया, तो वह सीधे चैट में दिखेगा ताकि हमें पता चले असली वजह क्या है
-            return f"Babu, Google Error: {res_data['error'].get('message', 'Unknown error')}"
         else:
-            return "Babu, server se kuch alag response aaya hai."
-            
+            return "Babu, abhi server thoda busy hai, dobara try karo na."
     except Exception as e:
-        return f"Technical Error aa gaya: {str(e)}"
+        return f"Babu, connection error aa gaya: {str(e)}"
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
